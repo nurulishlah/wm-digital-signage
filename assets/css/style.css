@@ -1,0 +1,275 @@
+/* Digital Signage Styles */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #000;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+}
+
+#signage-app {
+    display: grid;
+    grid-template-rows: 90px 1fr 60px;
+    height: 100vh;
+}
+
+/* Header */
+#signage-header {
+    background: #064e3b;
+    /* Dark Green */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+}
+
+.mosque-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.mosque-logo {
+    height: 70px;
+    width: auto;
+    max-width: 200px;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.mosque-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.mosque-name {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.mosque-slogan {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #e2e8f0;
+    /* Slate 200 */
+    margin-bottom: 0.2rem;
+    font-style: italic;
+}
+
+.mosque-address {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #e2e8f0;
+    opacity: 0.9;
+}
+
+.clock-widget {
+    text-align: right;
+}
+
+.time-now {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.date-now {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #f1f5f9;
+    opacity: 0.9;
+}
+
+/* Main Content Grid */
+#signage-main {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    /* Slightly wider dashboard */
+    height: 100%;
+    border-top: 4px solid #047857;
+    border-bottom: 4px solid #047857;
+}
+
+/* Left: Slider */
+#signage-slider {
+    background: #000;
+    position: relative;
+    overflow: hidden;
+}
+
+.signage-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.signage-slide.active {
+    opacity: 1;
+    z-index: 2;
+}
+
+.signage-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Right: Prayer Times */
+#signage-jadwal {
+    background: #0f172a;
+    /* Slate 900 */
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: inset 10px 0 20px -10px rgba(0, 0, 0, 0.5);
+}
+
+.prayer-item {
+    background: #1e293b;
+    /* Slate 800 */
+    padding: 1.25rem;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 6px solid transparent;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prayer-item.active {
+    background: #0f766e;
+    /* Teal 700 */
+    border-left-color: #2dd4bf;
+    /* Teal 400 */
+    transform: scale(1.03) translateX(5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+.prayer-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.prayer-icon {
+    font-size: 1.8rem;
+    color: #94a3b8;
+    width: 30px;
+    text-align: center;
+    transition: color 0.3s;
+}
+
+.prayer-item.active .prayer-icon {
+    color: #fff;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+}
+
+.prayer-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+.prayer-time {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+}
+
+.countdown-box {
+    background: #334155;
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: auto;
+    border: 1px solid #475569;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.next-prayer-label {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #cbd5e1;
+    margin-bottom: 0.5rem;
+}
+
+.countdown-timer {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #fbbf24;
+    /* Amber 400 */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-family: 'Courier New', monospace;
+    /* Monospace for stability */
+    letter-spacing: -2px;
+}
+
+/* Footer: Running Text */
+#signage-footer {
+    background: #064e3b;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.running-text {
+    font-size: 2rem;
+    padding-left: 100%;
+    animation: marquee 25s linear infinite;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    display: inline-flex;
+    /* Helps with vertical alignment of children */
+    align-items: center;
+}
+
+/* Dashicons Vertical Alignment Fix */
+.running-icon {
+    font-size: 1.2em !important;
+    /* Scale relative to text */
+    width: 1.2em !important;
+    height: 1.2em !important;
+    vertical-align: middle !important;
+    position: relative;
+    top: -0.05em;
+    /* Micro adjustment */
+    color: #fbbf24;
+    /* Amber Color */
+    margin-right: 0.1em;
+    display: inline-block;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
