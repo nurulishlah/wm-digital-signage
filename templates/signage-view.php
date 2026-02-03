@@ -8,12 +8,19 @@
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <title>Digital Signage - <?php bloginfo('name'); ?></title>
     <link rel="stylesheet" href="<?php echo WM_DIGISIGN_URL . 'assets/css/style.css'; ?>">
     <link rel="stylesheet" href="<?php echo get_template_directory_uri() . '/wm-css/icofont.css'; ?>">
     <?php wp_head(); ?>
+    <!-- Load our CSS AFTER wp_head to override theme styles -->
+    <link rel="stylesheet" href="<?php echo WM_DIGISIGN_URL . 'assets/css/style.css'; ?>">
 </head>
-<body>
+<body class="signage-page">
 
 <div id="signage-app">
     <!-- Header -->

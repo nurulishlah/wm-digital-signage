@@ -1,76 +1,117 @@
-/* Digital Signage Styles */
-html,
-body {
+/*
+ * WM Digital Signage - 2026 Modern Minimalist
+ * Glassmorphism + Card-based Layout
+ */
+
+/* ===== CSS Variables (Design Tokens) ===== */
+:root {
+    --clr-primary: #064E3B;
+    /* Deep Emerald */
+    --clr-accent: #F59E0B;
+    /* Soft Gold */
+    --clr-surface: #1E293B;
+    /* Slate Gray */
+    --clr-surface-light: #334155;
+    --clr-text: #F8FAFC;
+    /* White */
+    --clr-text-muted: #94A3B8;
+    --clr-glass: rgba(30, 41, 59, 0.7);
+    --clr-glass-border: rgba(255, 255, 255, 0.1);
+
+    --safe-zone: 40px;
+    /* TV bezel safe zone */
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --blur: 20px;
+
+    --font-main: 'Inter', system-ui, sans-serif;
+}
+
+/* ===== Reset & Base ===== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: #000;
-    color: #fff;
+}
+
+html,
+body {
+    width: 100vw !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    font-family: var(--font-main) !important;
+    background: radial-gradient(ellipse at top right, #064E3B 0%, #0F172A 50%) !important;
+    /* Radial gradient from top right corner */
+    color: var(--clr-text) !important;
     -webkit-font-smoothing: antialiased;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 #signage-app {
     display: grid;
-    grid-template-rows: 90px 1fr 60px;
+    grid-template-rows: auto 1fr auto;
     height: 100vh;
+    padding: var(--safe-zone);
+    gap: 24px;
 }
 
-/* Header */
+/* ===== Glassmorphism Card Mixin ===== */
+.glass-card {
+    background: var(--clr-glass);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--clr-glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Header ===== */
 #signage-header {
-    background: #064e3b;
-    /* Dark Green */
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 2rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    z-index: 10;
 }
 
 .mosque-info {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 24px;
 }
 
 .mosque-logo {
-    height: 70px;
+    height: 64px;
     width: auto;
-    max-width: 200px;
+    max-width: 160px;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
 .mosque-text {
     display: flex;
     flex-direction: column;
+    gap: 4px;
 }
 
 .mosque-name {
-    font-size: 2.2rem;
-    font-weight: 800;
-    line-height: 1.1;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--clr-text);
 }
 
 .mosque-slogan {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 400;
-    color: #e2e8f0;
-    /* Slate 200 */
-    margin-bottom: 0.2rem;
+    color: var(--clr-accent);
     font-style: italic;
 }
 
 .mosque-address {
-    font-size: 1rem;
-    font-weight: 400;
-    color: #e2e8f0;
-    opacity: 0.9;
+    font-size: 0.9rem;
+    color: var(--clr-text-muted);
 }
 
 .clock-widget {
@@ -78,35 +119,38 @@ body {
 }
 
 .time-now {
-    font-size: 3rem;
+    font-size: 4rem;
     font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--clr-text);
     line-height: 1;
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .date-now {
     font-size: 1.1rem;
     font-weight: 500;
-    color: #f1f5f9;
-    opacity: 0.9;
+    color: var(--clr-text-muted);
+    margin-top: 4px;
 }
 
-/* Main Content Grid */
+/* ===== Main Content Grid ===== */
 #signage-main {
     display: grid;
-    grid-template-columns: 1fr 380px;
-    /* Slightly wider dashboard */
-    height: 100%;
-    border-top: 4px solid #047857;
-    border-bottom: 4px solid #047857;
+    grid-template-columns: 1fr 400px;
+    gap: 24px;
+    min-height: 0;
+    /* Prevent overflow */
 }
 
-/* Left: Slider */
+/* ===== Slider Card ===== */
 #signage-slider {
-    background: #000;
     position: relative;
     overflow: hidden;
+    background: var(--clr-glass);
+    backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--clr-glass-border);
+    border-radius: var(--radius-lg);
 }
 
 .signage-slide {
@@ -128,139 +172,127 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: var(--radius-lg);
 }
 
-/* Right: Prayer Times */
+/* ===== Prayer Times Card ===== */
 #signage-jadwal {
-    background: #0f172a;
-    /* Slate 900 */
-    padding: 1.5rem;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    box-shadow: inset 10px 0 20px -10px rgba(0, 0, 0, 0.5);
+    padding: 24px;
+    background: var(--clr-glass);
+    backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--clr-glass-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
 .prayer-item {
-    background: #1e293b;
-    /* Slate 800 */
-    padding: 1.25rem;
-    border-radius: 12px;
-    margin-bottom: 0.75rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-left: 6px solid transparent;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    border-left: 4px solid transparent;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .prayer-item.active {
-    background: #0f766e;
-    /* Teal 700 */
-    border-left-color: #2dd4bf;
-    /* Teal 400 */
-    transform: scale(1.03) translateX(5px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    background: rgba(6, 78, 59, 0.3);
+    border-left-color: var(--clr-accent);
+    /* Subtle - no scale or heavy shadow */
 }
 
 .prayer-label {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 .prayer-icon {
-    font-size: 1.8rem;
-    color: #94a3b8;
-    width: 30px;
+    font-size: 1.5rem;
+    color: var(--clr-text-muted);
+    width: 28px;
     text-align: center;
     transition: color 0.3s;
 }
 
 .prayer-item.active .prayer-icon {
-    color: #fff;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5));
+    color: var(--clr-accent);
 }
 
 .prayer-name {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    color: #f1f5f9;
+    color: var(--clr-text);
 }
 
 .prayer-time {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 800;
-    color: #fff;
-    font-feature-settings: "tnum";
+    color: var(--clr-text);
     font-variant-numeric: tabular-nums;
 }
 
+/* ===== Countdown Box ===== */
 .countdown-box {
-    background: #334155;
-    text-align: center;
-    padding: 1.5rem;
-    border-radius: 12px;
     margin-top: auto;
-    border: 1px solid #475569;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    text-align: center;
+    background: linear-gradient(135deg, var(--clr-primary) 0%, rgba(6, 78, 59, 0.8) 100%);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--clr-glass-border);
 }
 
 .next-prayer-label {
-    font-size: 1rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #cbd5e1;
-    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+    color: var(--clr-text-muted);
+    margin-bottom: 8px;
 }
 
 .countdown-timer {
-    font-size: 2.5rem;
+    font-size: 3rem;
     font-weight: 800;
-    color: #fbbf24;
-    /* Amber 400 */
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    font-family: 'Courier New', monospace;
-    /* Monospace for stability */
+    color: var(--clr-accent);
     letter-spacing: -2px;
+    font-family: 'Inter', monospace;
+    text-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
 }
 
-/* Footer: Running Text */
+/* ===== Footer / Running Text ===== */
 #signage-footer {
-    background: #064e3b;
     display: flex;
     align-items: center;
-    white-space: nowrap;
+    padding: 20px 32px;
+    background: var(--clr-glass);
+    backdrop-filter: blur(var(--blur));
+    border: 1px solid var(--clr-glass-border);
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    position: relative;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
 }
 
 .running-text {
-    font-size: 2rem;
-    padding-left: 100%;
-    animation: marquee 25s linear infinite;
-    font-weight: 600;
-    color: #fff;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     display: inline-flex;
-    /* Helps with vertical alignment of children */
     align-items: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--clr-text);
+    padding-left: 100%;
+    animation: marquee 30s linear infinite;
 }
 
-/* Dashicons Vertical Alignment Fix */
 .running-icon {
     font-size: 1.2em !important;
-    /* Scale relative to text */
     width: 1.2em !important;
     height: 1.2em !important;
     vertical-align: middle !important;
-    position: relative;
-    top: -0.05em;
-    /* Micro adjustment */
-    color: #fbbf24;
-    /* Amber Color */
-    margin-right: 0.1em;
+    color: var(--clr-accent);
+    margin: 0 8px;
     display: inline-block;
 }
 
@@ -271,5 +303,24 @@ body {
 
     100% {
         transform: translateX(-100%);
+    }
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 1280px) {
+    :root {
+        --safe-zone: 24px;
+    }
+
+    #signage-main {
+        grid-template-columns: 1fr 320px;
+    }
+
+    .time-now {
+        font-size: 3rem;
+    }
+
+    .mosque-name {
+        font-size: 1.5rem;
     }
 }
