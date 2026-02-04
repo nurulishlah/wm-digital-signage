@@ -12,8 +12,9 @@ function initSlider() {
     if (slides.length < 2) return;
 
     let currentIndex = 0;
-    const IMAGE_DURATION = 5000;  // 5 seconds for images
-    const VIDEO_DURATION = 30000; // 30 seconds for videos
+    const IMAGE_DURATION = 5000;    // 5 seconds for images
+    const VIDEO_DURATION = 30000;   // 30 seconds for videos
+    const CAMPAIGN_DURATION = 20000; // 20 seconds for campaign slides
 
     // Set initial state
     slides[0].classList.add('active');
@@ -23,7 +24,10 @@ function initSlider() {
     }
 
     function getDuration(slide) {
-        return getSlideType(slide) === 'video' ? VIDEO_DURATION : IMAGE_DURATION;
+        const type = getSlideType(slide);
+        if (type === 'video') return VIDEO_DURATION;
+        if (type === 'campaign') return CAMPAIGN_DURATION;
+        return IMAGE_DURATION;
     }
 
     function nextSlide() {

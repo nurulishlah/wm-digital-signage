@@ -67,8 +67,17 @@
                 'order' => 'DESC',
             ));
             
-            // Merge posts: slides first, then latest video at the end
-            $all_posts = array_merge($slides_query->posts, $video_query->posts);
+            // Query latest campaign (for fundraiser progress slide)
+            $campaign_query = new WP_Query(array(
+                'post_type' => 'sf_campaign',
+                'posts_per_page' => 1,
+                'orderby' => 'date',
+                'order' => 'DESC',
+                'post_status' => 'publish',
+            ));
+            
+            // Merge posts: slides first, then video, then campaign at the end
+            $all_posts = array_merge($slides_query->posts, $video_query->posts, $campaign_query->posts);
             $has_posts = !empty($all_posts);
 
             if ($has_posts) :
@@ -86,10 +95,96 @@
                     }
                     
                     // Determine slide type
-                    $slide_type = !empty($video_url) ? 'video' : 'image';
+                    $slide_type = 'image';
+                    if (!empty($video_url)) {
+                        $slide_type = 'video';
+                    } elseif ($post_type === 'sf_campaign') {
+                        $slide_type = 'campaign';
+                    }
                     ?>
-                    <div class="signage-slide <?php echo $active_class; ?>" data-type="<?php echo $slide_type; ?>">
-                        <?php if ($slide_type === 'video' && !empty($video_url)) : ?>
+                    <div class="signage-slide <?php echo $active_class; ?>" data-type="<?php echo $slide_type; ?>"<?php 
+                        // Add background image for campaign slides
+                        if ($slide_type === 'campaign' && has_post_thumbnail($post)) {
+                            $bg_url = get_the_post_thumbnail_url($post, 'full');
+                            echo ' style="background-image: url(' . esc_url($bg_url) . '); background-size: cover; background-position: center;"';
+                        }
+                    ?>>
+                        <?php if ($slide_type === 'campaign') : ?>
+                            <?php
+                            // Get campaign data using Simple Fundraiser functions
+                            $campaign_id = $post->ID;
+                            $goal = get_post_meta($campaign_id, '_sf_goal', true);
+                            $collected = function_exists('sf_get_campaign_total') ? sf_get_campaign_total($campaign_id) : 0;
+                            $progress = function_exists('sf_get_campaign_progress') ? sf_get_campaign_progress($campaign_id) : 0;
+                            
+                            // Payment info
+                            $bank_name = get_post_meta($campaign_id, '_sf_bank_name', true);
+                            $account_number = get_post_meta($campaign_id, '_sf_account_number', true);
+                            $account_holder = get_post_meta($campaign_id, '_sf_account_holder', true);
+                            $qris_image_id = get_post_meta($campaign_id, '_sf_qris_image', true);
+                            $qris_url = $qris_image_id ? wp_get_attachment_url($qris_image_id) : '';
+                            
+                            // Format currency
+                            $format_fn = function_exists('sf_format_currency') ? 'sf_format_currency' : function($amt) { return 'Rp ' . number_format($amt, 0, ',', '.'); };
+                            ?>
+                            <div class="campaign-slide-overlay"></div>
+                            <div class="campaign-slide-content">
+                                <!-- Header -->
+                                <div class="campaign-header">
+                                    <h1 class="campaign-title"><?php echo get_the_title($post); ?></h1>
+                                </div>
+                                
+                                <!-- Two Column Layout -->
+                                <div class="campaign-body">
+                                    <!-- Left: Progress -->
+                                    <div class="campaign-left">
+                                        <div class="campaign-progress-section">
+                                            <h2>Progres</h2>
+                                            <div class="campaign-stats">
+                                                <div class="campaign-stat">
+                                                    <span class="stat-label">Target</span>
+                                                    <span class="stat-value"><?php echo $format_fn(floatval($goal)); ?></span>
+                                                </div>
+                                                <div class="campaign-stat">
+                                                    <span class="stat-label">Terkumpul</span>
+                                                    <span class="stat-value collected"><?php echo $format_fn($collected); ?></span>
+                                                </div>
+                                            </div>
+                                            <div class="campaign-progress-bar">
+                                                <div class="progress-fill" style="width: <?php echo esc_attr($progress); ?>%;"></div>
+                                            </div>
+                                            <div class="campaign-progress-percent"><?php echo number_format($progress, 1); ?>%</div>
+                                            <div class="campaign-link"><?php echo esc_url(get_permalink($post)); ?></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Right: Payment Info + QRIS -->
+                                    <div class="campaign-right">
+                                        <div class="campaign-donate-section">
+                                            <h2>Cara Donasi</h2>
+                                            <div class="donate-columns">
+                                                <?php if ($qris_url) : ?>
+                                                    <div class="donate-col qris-col">
+                                                        <p class="donate-label">Scan QRIS</p>
+                                                        <img src="<?php echo esc_url($qris_url); ?>" alt="QRIS" class="qris-image">
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if ($bank_name && $account_number) : ?>
+                                                    <div class="donate-col bank-col">
+                                                        <p class="donate-label">Transfer Bank</p>
+                                                        <div class="bank-info">
+                                                            <div class="bank-name"><?php echo esc_html($bank_name); ?></div>
+                                                            <div class="account-number"><?php echo esc_html($account_number); ?></div>
+                                                            <div class="account-holder">a.n <?php echo esc_html($account_holder); ?></div>
+                                                        </div>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php elseif ($slide_type === 'video' && !empty($video_url)) : ?>
                             <?php
                             // Convert YouTube/Vimeo URL to embed URL
                             $embed_url = '';
