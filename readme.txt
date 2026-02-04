@@ -19,6 +19,7 @@ WM Digital Signage transforms your website into a stunning TV display for your m
 * 🕐 Real-time clock with Hijri/Gregorian date
 * 🕌 Automatic prayer times with countdown
 * 🖼️ Image slider from your Slide posts
+* 🎬 Video support (YouTube, Vimeo, or direct MP4)
 * 📢 Dynamic running text with announcements
 * 🎨 2026 Modern Minimalist design with Glassmorphism
 * ☪️ Beautiful Islamic geometric pattern overlay

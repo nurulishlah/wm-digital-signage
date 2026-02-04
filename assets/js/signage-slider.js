@@ -1,5 +1,7 @@
 /**
- * Simple Crossfade Slide Logic
+ * Signage Slider with Video Support
+ * - Images: 5 seconds
+ * - Videos: 30 seconds (more time to play)
  */
 document.addEventListener('DOMContentLoaded', function () {
     initSlider();
@@ -10,11 +12,21 @@ function initSlider() {
     if (slides.length < 2) return;
 
     let currentIndex = 0;
+    const IMAGE_DURATION = 5000;  // 5 seconds for images
+    const VIDEO_DURATION = 30000; // 30 seconds for videos
 
     // Set initial state
     slides[0].classList.add('active');
 
-    setInterval(() => {
+    function getSlideType(slide) {
+        return slide.dataset.type || 'image';
+    }
+
+    function getDuration(slide) {
+        return getSlideType(slide) === 'video' ? VIDEO_DURATION : IMAGE_DURATION;
+    }
+
+    function nextSlide() {
         // Remove active from current
         slides[currentIndex].classList.remove('active');
 
@@ -23,5 +35,11 @@ function initSlider() {
 
         // Add active to next
         slides[currentIndex].classList.add('active');
-    }, 5000); // 5 seconds per slide
+
+        // Schedule next transition based on current slide type
+        setTimeout(nextSlide, getDuration(slides[currentIndex]));
+    }
+
+    // Start with duration based on first slide
+    setTimeout(nextSlide, getDuration(slides[0]));
 }

@@ -51,33 +51,91 @@
         <!-- Slider Area -->
         <main id="signage-slider">
             <?php
-            $slider_query = new WP_Query(array(
-                'post_type' => 'slide', // Using 'slide' CPT
-                'posts_per_page' => 5,
+            // Query slides (all)
+            $slides_query = new WP_Query(array(
+                'post_type' => 'slide',
+                'posts_per_page' => 10,
                 'orderby' => 'menu_order date',
                 'order' => 'ASC',
             ));
+            
+            // Query only the latest video
+            $video_query = new WP_Query(array(
+                'post_type' => 'video',
+                'posts_per_page' => 1,
+                'orderby' => 'date',
+                'order' => 'DESC',
+            ));
+            
+            // Merge posts: slides first, then latest video at the end
+            $all_posts = array_merge($slides_query->posts, $video_query->posts);
+            $has_posts = !empty($all_posts);
 
-            if ($slider_query->have_posts()) :
+            if ($has_posts) :
                 $idx = 0;
-                while ($slider_query->have_posts()) : $slider_query->the_post();
+                foreach ($all_posts as $post) :
+                    setup_postdata($post);
                     $active_class = ($idx === 0) ? 'active' : '';
+                    $post_type = get_post_type($post);
                     $idx++;
+                    
+                    // Check if this is a video post
+                    $video_url = '';
+                    if ($post_type === 'video') {
+                        $video_url = get_post_meta($post->ID, 'video_embed', true);
+                    }
+                    
+                    // Determine slide type
+                    $slide_type = !empty($video_url) ? 'video' : 'image';
                     ?>
-                    <div class="signage-slide <?php echo $active_class; ?>">
-                        <?php if (has_post_thumbnail()) : ?>
-                            <?php the_post_thumbnail('full'); ?>
+                    <div class="signage-slide <?php echo $active_class; ?>" data-type="<?php echo $slide_type; ?>">
+                        <?php if ($slide_type === 'video' && !empty($video_url)) : ?>
+                            <?php
+                            // Convert YouTube/Vimeo URL to embed URL
+                            $embed_url = '';
+                            if (strpos($video_url, 'youtube.com') !== false || strpos($video_url, 'youtu.be') !== false) {
+                                // Extract YouTube video ID
+                                preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/', $video_url, $matches);
+                                if (!empty($matches[1])) {
+                                    $embed_url = 'https://www.youtube.com/embed/' . $matches[1] . '?autoplay=1&mute=1&loop=1&controls=0&playlist=' . $matches[1];
+                                }
+                            } elseif (strpos($video_url, 'vimeo.com') !== false) {
+                                // Extract Vimeo video ID
+                                preg_match('/vimeo\.com\/(\d+)/', $video_url, $matches);
+                                if (!empty($matches[1])) {
+                                    $embed_url = 'https://player.vimeo.com/video/' . $matches[1] . '?autoplay=1&muted=1&loop=1&background=1';
+                                }
+                            } else {
+                                // Assume it's a direct video URL (mp4, webm)
+                                $embed_url = $video_url;
+                            }
+                            ?>
+                            <?php if (strpos($embed_url, 'youtube.com') !== false || strpos($embed_url, 'vimeo.com') !== false) : ?>
+                                <iframe 
+                                    src="<?php echo esc_url($embed_url); ?>" 
+                                    frameborder="0" 
+                                    allow="autoplay; fullscreen" 
+                                    allowfullscreen
+                                    class="slide-video-iframe">
+                                </iframe>
+                            <?php else : ?>
+                                <video autoplay muted loop playsinline class="slide-video">
+                                    <source src="<?php echo esc_url($embed_url); ?>" type="video/mp4">
+                                </video>
+                            <?php endif; ?>
+                        <?php elseif (has_post_thumbnail($post)) : ?>
+                            <?php echo get_the_post_thumbnail($post, 'full'); ?>
                         <?php else : ?>
-                            <h1 style="font-size: 4rem; text-align: center; color: #ccc;"><?php the_title(); ?></h1>
+                            <h1 style="font-size: 4rem; text-align: center; color: #ccc;"><?php echo get_the_title($post); ?></h1>
                         <?php endif; ?>
                     </div>
                     <?php
-                endwhile;
+                endforeach;
                 wp_reset_postdata();
             else :
                 // Fallback
                 ?>
-                <div class="signage-slide active">
+                <div class="signage-slide active" data-type="image">
                     <div style="text-align: center;">
                         <h1 style="font-size: 4rem; color: #fff;">Selamat Datang</h1>
                         <p style="font-size: 2rem; color: #ccc;"><?php bloginfo('name'); ?></p>

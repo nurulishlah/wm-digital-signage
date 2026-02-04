@@ -194,6 +194,16 @@ body {
     border-radius: var(--radius-lg);
 }
 
+/* Video slides */
+.slide-video-iframe,
+.slide-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
+    border-radius: var(--radius-lg);
+}
+
 /* ===== Prayer Times Card ===== */
 #signage-jadwal {
     display: flex;
