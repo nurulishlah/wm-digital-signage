@@ -3,7 +3,7 @@ Contributors: nurulishlah
 Tags: digital signage, mosque, prayer times, masjid, display
 Requires at least: 5.0
 Tested up to: 6.4
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -20,6 +20,7 @@ WM Digital Signage transforms your website into a stunning TV display for your m
 * 🕌 Automatic prayer times with countdown
 * 🖼️ Image slider from your Slide posts
 * 🎬 Video support (YouTube, Vimeo, or direct MP4)
+* 💰 Campaign progress slide with QRIS and bank info
 * 📢 Dynamic running text with announcements
 * 🎨 2026 Modern Minimalist design with Glassmorphism
 * ☪️ Beautiful Islamic geometric pattern overlay
@@ -28,7 +29,7 @@ WM Digital Signage transforms your website into a stunning TV display for your m
 **Requirements:**
 
 * WP Masjid theme (for prayer time settings and content)
-* Simple Fundraiser plugin (optional, for campaign announcements)
+* Simple Fundraiser plugin (optional, for campaign slides)
 
 == Installation ==
 
@@ -53,6 +54,14 @@ Currently the design uses the WP Masjid theme color palette. Custom color option
 
 == Changelog ==
 
+= 1.1.0 =
+* NEW: Video slide support (YouTube, Vimeo, direct MP4)
+* NEW: Campaign progress slide from Simple Fundraiser
+* Campaign slide shows target, collected, progress bar
+* Campaign slide shows QRIS and bank transfer info
+* Videos display for 30 seconds, campaigns for 20 seconds
+* Only latest video and campaign are shown
+
 = 1.0.0 =
 * Initial release
 * Real-time clock and date display
@@ -64,6 +73,9 @@ Currently the design uses the WP Masjid theme color palette. Custom color option
 * TV-safe zones
 
 == Upgrade Notice ==
+
+= 1.1.0 =
+New video and campaign slide support! Show your fundraising campaigns with QRIS codes.
 
 = 1.0.0 =
 Initial release of WM Digital Signage.

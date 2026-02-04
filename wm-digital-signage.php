@@ -2,8 +2,8 @@
 /**
  * Plugin Name: WM Digital Signage
  * Description: A digital signage / Jasma-like display plugin for WP Masjid Theme. Access via /signage
- * Version: 1.0.0
- * Author: Antigravity
+ * Version: 1.1.0
+ * Author: Muhamad Ishlah
  * Text Domain: wm-digisign
  */
 
