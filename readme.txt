@@ -3,7 +3,7 @@ Contributors: nurulishlah
 Tags: digital signage, mosque, prayer times, masjid, display
 Requires at least: 5.0
 Tested up to: 6.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -54,6 +54,14 @@ Currently the design uses the WP Masjid theme color palette. Custom color option
 
 == Changelog ==
 
+= 1.2.0 =
+* IMPROVED: Responsive layout for small screens and smart displays
+* NEW: Height-based media queries for landscape TVs (720p)
+* NEW: Nest Hub optimized layout (1024×600)
+* FIX: Strip shortcode tags from running text output
+* IMPROVED: Campaign slide vertical layout fills available space
+* IMPROVED: Prayer times sidebar adapts to limited vertical space
+
 = 1.1.0 =
 * NEW: Video slide support (YouTube, Vimeo, direct MP4)
 * NEW: Campaign progress slide from Simple Fundraiser
@@ -73,6 +81,9 @@ Currently the design uses the WP Masjid theme color palette. Custom color option
 * TV-safe zones
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+Responsive display for Nest Hub and small TVs! All prayer times and countdown now fit on 720p and 600p screens.
 
 = 1.1.0 =
 New video and campaign slide support! Show your fundraising campaigns with QRIS codes.

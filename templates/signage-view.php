@@ -299,7 +299,7 @@
                 }
 
                 // Combine: Static Text + Dynamic Posts
-                echo strip_tags($static_text) . $dynamic_text; 
+                echo strip_tags( strip_shortcodes($static_text) ) . $dynamic_text; 
             ?>
         </div>
     </footer>
