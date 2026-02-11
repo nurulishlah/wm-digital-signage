@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WM Digital Signage
  * Description: A digital signage / Jasma-like display plugin for WP Masjid Theme. Access via /signage
- * Version: 1.2.0
+ * Version: 1.3.0
  * Author: Muhamad Ishlah
  * Text Domain: wm-digisign
  */
@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'WM_DIGISIGN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WM_DIGISIGN_URL', plugin_dir_url( __FILE__ ) );
+define( 'WM_DIGISIGN_VERSION', '1.3.0' );
 
 class WM_Digital_Signage {
 

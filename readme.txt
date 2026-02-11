@@ -3,7 +3,7 @@ Contributors: nurulishlah
 Tags: digital signage, mosque, prayer times, masjid, display
 Requires at least: 5.0
 Tested up to: 6.4
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -54,6 +54,17 @@ Currently the design uses the WP Masjid theme color palette. Custom color option
 
 == Changelog ==
 
+= 1.3.0 =
+* NEW: Auto-refresh signage when content is updated in WordPress (no manual reload needed)
+* NEW: Prayer countdown auto-transitions to next prayer without page reload
+* NEW: Midnight rollover recalculates prayer times for new day
+* NEW: REST API endpoint for content change detection (/wp-json/wm-digisign/v1/content-hash)
+* NEW: Cache-busting version parameter on all CSS/JS assets
+* SECURITY: Escaped all dynamic output with esc_html/esc_attr/esc_js to prevent XSS
+* SECURITY: Escaped all asset URLs with esc_url()
+* FIX: Removed duplicate CSS loading
+* FIX: Added missing wp_footer() call
+
 = 1.2.0 =
 * IMPROVED: Responsive layout for small screens and smart displays
 * NEW: Height-based media queries for landscape TVs (720p)
@@ -81,6 +92,9 @@ Currently the design uses the WP Masjid theme color palette. Custom color option
 * TV-safe zones
 
 == Upgrade Notice ==
+
+= 1.3.0 =
+Auto-refresh content, auto-transitioning prayer countdown, and security hardening. Recommended update.
 
 = 1.2.0 =
 Responsive display for Nest Hub and small TVs! All prayer times and countdown now fit on 720p and 600p screens.

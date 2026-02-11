@@ -14,11 +14,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <title>Digital Signage - <?php bloginfo('name'); ?></title>
-    <link rel="stylesheet" href="<?php echo WM_DIGISIGN_URL . 'assets/css/style.css'; ?>">
-    <link rel="stylesheet" href="<?php echo get_template_directory_uri() . '/wm-css/icofont.css'; ?>">
+    <link rel="stylesheet" href="<?php echo esc_url( get_template_directory_uri() . '/wm-css/icofont.css' ); ?>">
     <?php wp_head(); ?>
     <!-- Load our CSS AFTER wp_head to override theme styles -->
-    <link rel="stylesheet" href="<?php echo WM_DIGISIGN_URL . 'assets/css/style.css'; ?>">
+    <link rel="stylesheet" href="<?php echo esc_url( WM_DIGISIGN_URL . 'assets/css/style.css?ver=' . WM_DIGISIGN_VERSION ); ?>">
 </head>
 <body class="signage-page">
 
@@ -35,9 +34,9 @@
             <?php endif; ?>
             
             <div class="mosque-text">
-                <div class="mosque-name"><?php echo get_theme_mod('nama_masjid', get_bloginfo('name')); ?></div>
+                <div class="mosque-name"><?php echo esc_html( get_theme_mod('nama_masjid', get_bloginfo('name')) ); ?></div>
                 <div class="mosque-slogan" style="font-size: 1.2rem; opacity: 0.9; color: #cbd5e1; font-weight: 400;"><?php bloginfo('description'); ?></div>
-                <div class="mosque-address"><?php echo get_theme_mod('alamat', ''); ?></div>
+                <div class="mosque-address"><?php echo esc_html( get_theme_mod('alamat', '') ); ?></div>
             </div>
         </div>
         <div class="clock-widget">
@@ -102,7 +101,7 @@
                         $slide_type = 'campaign';
                     }
                     ?>
-                    <div class="signage-slide <?php echo $active_class; ?>" data-type="<?php echo $slide_type; ?>"<?php 
+                    <div class="signage-slide <?php echo esc_attr($active_class); ?>" data-type="<?php echo esc_attr($slide_type); ?>"<?php 
                         // Add background image for campaign slides
                         if ($slide_type === 'campaign' && has_post_thumbnail($post)) {
                             $bg_url = get_the_post_thumbnail_url($post, 'full');
@@ -131,7 +130,7 @@
                             <div class="campaign-slide-content">
                                 <!-- Header -->
                                 <div class="campaign-header">
-                                    <h1 class="campaign-title"><?php echo get_the_title($post); ?></h1>
+                                    <h1 class="campaign-title"><?php echo esc_html( get_the_title($post) ); ?></h1>
                                 </div>
                                 
                                 <!-- Two Column Layout -->
@@ -221,7 +220,7 @@
                         <?php elseif (has_post_thumbnail($post)) : ?>
                             <?php echo get_the_post_thumbnail($post, 'full'); ?>
                         <?php else : ?>
-                            <h1 style="font-size: 4rem; text-align: center; color: #ccc;"><?php echo get_the_title($post); ?></h1>
+                            <h1 style="font-size: 4rem; text-align: center; color: #ccc;"><?php echo esc_html( get_the_title($post) ); ?></h1>
                         <?php endif; ?>
                     </div>
                     <?php
@@ -292,7 +291,7 @@
                            
                            // Separator + Title
                            // Using dedicated class for alignment
-                           $dynamic_text .= ' &nbsp;&nbsp;<span class="dashicons ' . $icon_class . ' running-icon"></span>&nbsp;&nbsp; ' . get_the_title();
+                           $dynamic_text .= ' &nbsp;&nbsp;<span class="dashicons ' . esc_attr($icon_class) . ' running-icon"></span>&nbsp;&nbsp; ' . esc_html( get_the_title() );
                        }
                        wp_reset_postdata();
                    }
@@ -308,18 +307,19 @@
 <!-- Settings for JS -->
 <script>
     var wmDigiSettings = {
-        city_id: "<?php echo get_theme_mod('idsholat_id', '8'); ?>", // fallback to Jakarta
-        method: "<?php echo get_theme_mod('method_id', 'KEMENAG'); ?>",
-        imsaak_diff: 10, // minutes before Fajr
+        city_id: "<?php echo esc_js( get_theme_mod('idsholat_id', '8') ); ?>",
+        method: "<?php echo esc_js( get_theme_mod('method_id', 'KEMENAG') ); ?>",
+        imsaak_diff: 10,
         adjustment: 0,
         restUrl: "<?php echo esc_url( rest_url( 'wm-digisign/v1' ) ); ?>"
     };
 </script>
 
-<script src="<?php echo WM_DIGISIGN_URL . 'assets/js/PrayTimes.js'; ?>"></script>
-<script src="<?php echo WM_DIGISIGN_URL . 'assets/js/signage-clock.js'; ?>"></script>
-<script src="<?php echo WM_DIGISIGN_URL . 'assets/js/signage-slider.js'; ?>"></script>
-<script src="<?php echo WM_DIGISIGN_URL . 'assets/js/signage-refresh.js'; ?>"></script>
+<script src="<?php echo esc_url( WM_DIGISIGN_URL . 'assets/js/PrayTimes.js?ver=' . WM_DIGISIGN_VERSION ); ?>"></script>
+<script src="<?php echo esc_url( WM_DIGISIGN_URL . 'assets/js/signage-clock.js?ver=' . WM_DIGISIGN_VERSION ); ?>"></script>
+<script src="<?php echo esc_url( WM_DIGISIGN_URL . 'assets/js/signage-slider.js?ver=' . WM_DIGISIGN_VERSION ); ?>"></script>
+<script src="<?php echo esc_url( WM_DIGISIGN_URL . 'assets/js/signage-refresh.js?ver=' . WM_DIGISIGN_VERSION ); ?>"></script>
 
+<?php wp_footer(); ?>
 </body>
 </html>
