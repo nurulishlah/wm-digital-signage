@@ -25,6 +25,12 @@ class WM_Digital_Signage {
 		'adzan_duration'   => 2,
 		'iqamah_duration'  => 10,
 		'sholat_duration'  => 15,
+		'adj_fajr'         => 0,
+		'adj_sunrise'      => 0,
+		'adj_dhuhr'        => 0,
+		'adj_asr'          => 0,
+		'adj_maghrib'      => 0,
+		'adj_isha'         => 0,
 	);
 
 	public function __construct() {
@@ -170,15 +176,63 @@ class WM_Digital_Signage {
 				'wm_digisign_prayer_engine'
 			);
 		}
+
+		// --- Prayer Time Adjustment Section ---
+		add_settings_section(
+			'wm_digisign_time_adjust',
+			'Koreksi Waktu Sholat',
+			function () {
+				echo '<p>Koreksi waktu sholat dalam menit. Nilai positif = mundurkan, negatif = majukan. Contoh: <code>+2</code> berarti mundur 2 menit.</p>';
+			},
+			'wm-digisign'
+		);
+
+		$adj_fields = array(
+			'adj_fajr'    => 'Subuh',
+			'adj_sunrise' => 'Terbit',
+			'adj_dhuhr'   => 'Dzuhur',
+			'adj_asr'     => 'Ashar',
+			'adj_maghrib' => 'Maghrib',
+			'adj_isha'    => 'Isya',
+		);
+
+		foreach ( $adj_fields as $key => $label ) {
+			add_settings_field(
+				'wm_digisign_' . $key,
+				$label,
+				function () use ( $key ) {
+					$options = self::get_settings();
+					$val = isset( $options[ $key ] ) ? $options[ $key ] : 0;
+					printf(
+						'<input type="number" name="wm_digisign_options[%s]" value="%s" min="-30" max="30" class="small-text" /> <span class="description">menit</span>',
+						esc_attr( $key ),
+						esc_attr( $val )
+					);
+				},
+				'wm-digisign',
+				'wm_digisign_time_adjust'
+			);
+		}
 	}
 
 	public function sanitize_settings( $input ) {
 		$output = array();
-		foreach ( self::DEFAULTS as $key => $default ) {
-			$output[ $key ] = isset( $input[ $key ] ) ? absint( $input[ $key ] ) : $default;
-			if ( $output[ $key ] < 1 ) $output[ $key ] = $default;
+
+		// Engine duration fields (positive only, 1-60)
+		$duration_keys = array( 'approaching_mins', 'adzan_duration', 'iqamah_duration', 'sholat_duration' );
+		foreach ( $duration_keys as $key ) {
+			$output[ $key ] = isset( $input[ $key ] ) ? absint( $input[ $key ] ) : self::DEFAULTS[ $key ];
+			if ( $output[ $key ] < 1 ) $output[ $key ] = self::DEFAULTS[ $key ];
 			if ( $output[ $key ] > 60 ) $output[ $key ] = 60;
 		}
+
+		// Adjustment fields (can be negative, -30 to +30)
+		$adj_keys = array( 'adj_fajr', 'adj_sunrise', 'adj_dhuhr', 'adj_asr', 'adj_maghrib', 'adj_isha' );
+		foreach ( $adj_keys as $key ) {
+			$output[ $key ] = isset( $input[ $key ] ) ? intval( $input[ $key ] ) : 0;
+			$output[ $key ] = max( -30, min( 30, $output[ $key ] ) );
+		}
+
 		return $output;
 	}
 

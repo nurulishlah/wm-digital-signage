@@ -130,7 +130,8 @@ function calculateSchedule(lat, lng, timezone) {
     window.prayerData.times = times;
     window.prayerData.lastCalculatedDate = date.toDateString();
 
-    renderPrayerList(times);
+    applyAdjustments();
+    renderPrayerList(window.prayerData.times);
     findAndSetNextPrayer(new Date());
 
     // Start the engine tick (1 Hz)
@@ -151,8 +152,37 @@ function recalculateForNewDay() {
     window.prayerData.times = times;
     window.prayerData.lastCalculatedDate = today.toDateString();
 
-    renderPrayerList(times);
+    applyAdjustments();
+    renderPrayerList(window.prayerData.times);
     findAndSetNextPrayer(today);
+}
+
+/**
+ * Apply per-prayer minute adjustments from admin settings.
+ */
+function applyAdjustments() {
+    var adj = wmDigiSettings.prayer_adjustments;
+    if (!adj) return;
+
+    var times = window.prayerData.times;
+    var keys = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
+
+    keys.forEach(function (key) {
+        var minutes = parseInt(adj[key]) || 0;
+        if (minutes === 0) return;
+        if (!times[key]) return;
+
+        var parts = times[key].split(':').map(Number);
+        var totalMins = parts[0] * 60 + parts[1] + minutes;
+
+        // Clamp to 0-1439 (00:00 - 23:59)
+        if (totalMins < 0) totalMins = 0;
+        if (totalMins > 1439) totalMins = 1439;
+
+        var h = Math.floor(totalMins / 60);
+        var m = totalMins % 60;
+        times[key] = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+    });
 }
 
 // ===================================================================

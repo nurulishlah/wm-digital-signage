@@ -352,7 +352,15 @@
         approaching_mins: <?php echo intval( $engine_settings['approaching_mins'] ); ?>,
         adzan_duration: <?php echo intval( $engine_settings['adzan_duration'] ); ?>,
         iqamah_duration: <?php echo intval( $engine_settings['iqamah_duration'] ); ?>,
-        sholat_duration: <?php echo intval( $engine_settings['sholat_duration'] ); ?>
+        sholat_duration: <?php echo intval( $engine_settings['sholat_duration'] ); ?>,
+        prayer_adjustments: {
+            fajr: <?php echo intval( $engine_settings['adj_fajr'] ); ?>,
+            sunrise: <?php echo intval( $engine_settings['adj_sunrise'] ); ?>,
+            dhuhr: <?php echo intval( $engine_settings['adj_dhuhr'] ); ?>,
+            asr: <?php echo intval( $engine_settings['adj_asr'] ); ?>,
+            maghrib: <?php echo intval( $engine_settings['adj_maghrib'] ); ?>,
+            isha: <?php echo intval( $engine_settings['adj_isha'] ); ?>
+        }
     };
 </script>
 
