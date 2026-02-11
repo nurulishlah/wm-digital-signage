@@ -15,10 +15,18 @@
     async function fetchContentHash() {
         try {
             const url = (wmDigiSettings.restUrl || '/wp-json/wm-digisign/v1') + '/content-hash';
+
+            // Abort if request takes longer than 5 seconds
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+
             const response = await fetch(url, {
                 cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache' }
+                headers: { 'Cache-Control': 'no-cache' },
+                signal: controller.signal
             });
+
+            clearTimeout(timeoutId);
 
             if (!response.ok) throw new Error('HTTP ' + response.status);
 

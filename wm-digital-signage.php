@@ -33,6 +33,8 @@ class WM_Digital_Signage {
 		'adj_isha'         => 0,
 	);
 
+	const HASH_TRANSIENT_KEY = 'wm_digisign_content_hash';
+
 	public function __construct() {
 		add_action( 'init', array( $this, 'add_endpoint' ) );
 		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
@@ -40,6 +42,18 @@ class WM_Digital_Signage {
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
+
+		// Invalidate content hash cache on relevant changes
+		add_action( 'save_post', array( $this, 'invalidate_hash_cache' ) );
+		add_action( 'delete_post', array( $this, 'invalidate_hash_cache' ) );
+		add_action( 'update_option_wm_digisign_options', array( $this, 'invalidate_hash_cache' ) );
+	}
+
+	/**
+	 * Delete the cached content hash so the next poll recomputes it.
+	 */
+	public function invalidate_hash_cache() {
+		delete_transient( self::HASH_TRANSIENT_KEY );
 	}
 
 	public function add_endpoint() {
@@ -77,7 +91,28 @@ class WM_Digital_Signage {
 		) );
 	}
 
+	/**
+	 * Return the content hash, cached as a transient for performance.
+	 * The transient is invalidated on save_post, delete_post, and settings update.
+	 */
 	public function get_content_hash() {
+		$hash = get_transient( self::HASH_TRANSIENT_KEY );
+
+		if ( false === $hash ) {
+			$hash = $this->compute_content_hash();
+			set_transient( self::HASH_TRANSIENT_KEY, $hash, 120 ); // cache for 2 minutes max
+		}
+
+		return rest_ensure_response( array(
+			'hash' => $hash,
+			'time' => current_time( 'mysql' ),
+		) );
+	}
+
+	/**
+	 * Compute the content hash from all relevant data sources.
+	 */
+	private function compute_content_hash() {
 		$hash_parts = array();
 
 		$post_types = array( 'slide', 'video', 'sf_campaign', 'pengumuman', 'agenda', 'infaq', 'wakaf' );
@@ -106,12 +141,7 @@ class WM_Digital_Signage {
 		$settings = self::get_settings();
 		$hash_parts[] = 'settings:' . md5( serialize( $settings ) );
 
-		$hash = md5( implode( '|', $hash_parts ) );
-
-		return rest_ensure_response( array(
-			'hash' => $hash,
-			'time' => current_time( 'mysql' ),
-		) );
+		return md5( implode( '|', $hash_parts ) );
 	}
 
 	// -------------------------------------------------------

@@ -241,7 +241,24 @@
         <!-- Sidebar: Prayer Times -->
         <aside id="signage-jadwal">
             <div id="prayer-list">
-                <!-- Populated by JS -->
+                <?php
+                $prayer_items = array(
+                    'Fajr'    => array( 'name' => 'Subuh',   'icon' => 'icofont-night' ),
+                    'Sunrise' => array( 'name' => 'Terbit',  'icon' => 'icofont-hill-sunny' ),
+                    'Dhuhr'   => array( 'name' => 'Dzuhur',  'icon' => 'icofont-full-sunny' ),
+                    'Asr'     => array( 'name' => 'Ashar',   'icon' => 'icofont-hill-sunny' ),
+                    'Maghrib' => array( 'name' => 'Maghrib', 'icon' => 'icofont-sun-set' ),
+                    'Isha'    => array( 'name' => 'Isya',    'icon' => 'icofont-full-night' ),
+                );
+                foreach ( $prayer_items as $key => $item ) : ?>
+                    <div class="prayer-item" data-name="<?php echo esc_attr( $key ); ?>">
+                        <div class="prayer-label">
+                            <i class="prayer-icon <?php echo esc_attr( $item['icon'] ); ?>"></i>
+                            <span class="prayer-name"><?php echo esc_html( $item['name'] ); ?></span>
+                        </div>
+                        <span class="prayer-time">--:--</span>
+                    </div>
+                <?php endforeach; ?>
             </div>
             
             <div class="countdown-box">
