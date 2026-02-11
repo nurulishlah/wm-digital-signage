@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WM Digital Signage
  * Description: A digital signage / Jasma-like display plugin for WP Masjid Theme. Access via /signage
- * Version: 1.3.0
+ * Version: 1.4.0
  * Author: Muhamad Ishlah
  * Text Domain: wm-digisign
  */
@@ -13,15 +13,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'WM_DIGISIGN_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WM_DIGISIGN_URL', plugin_dir_url( __FILE__ ) );
-define( 'WM_DIGISIGN_VERSION', '1.3.0' );
+define( 'WM_DIGISIGN_VERSION', '1.4.0' );
 
 class WM_Digital_Signage {
+
+	/**
+	 * Default prayer engine settings.
+	 */
+	const DEFAULTS = array(
+		'approaching_mins' => 10,
+		'adzan_duration'   => 2,
+		'iqamah_duration'  => 10,
+		'sholat_duration'  => 15,
+	);
 
 	public function __construct() {
 		add_action( 'init', array( $this, 'add_endpoint' ) );
 		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
         add_filter( 'template_include', array( $this, 'load_template' ) );
 		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+		add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
 	}
 
 	public function add_endpoint() {
@@ -31,14 +43,12 @@ class WM_Digital_Signage {
 	public function template_redirect() {
 		global $wp_query;
 		if ( isset( $wp_query->query_vars['signage'] ) ) {
-            // We can handle logic here if needed, or just let template_include handle it
 		}
 	}
 
     public function load_template( $template ) {
         global $wp_query;
         if ( isset( $wp_query->query_vars['signage'] ) ) {
-            // Enqueue Dashicons for the signage view
             wp_enqueue_style( 'dashicons' );
             
             $new_template = WM_DIGISIGN_PATH . 'templates/signage-view.php';
@@ -49,9 +59,10 @@ class WM_Digital_Signage {
         return $template;
     }
 
-	/**
-	 * Register REST API routes for live content updates.
-	 */
+	// -------------------------------------------------------
+	// REST API
+	// -------------------------------------------------------
+
 	public function register_rest_routes() {
 		register_rest_route( 'wm-digisign/v1', '/content-hash', array(
 			'methods'             => 'GET',
@@ -60,14 +71,9 @@ class WM_Digital_Signage {
 		) );
 	}
 
-	/**
-	 * REST callback: returns a hash of all signage-relevant content.
-	 * The hash changes when any slide, video, campaign, or running text is modified.
-	 */
 	public function get_content_hash() {
 		$hash_parts = array();
 
-		// Collect last modified dates from all signage content types
 		$post_types = array( 'slide', 'video', 'sf_campaign', 'pengumuman', 'agenda', 'infaq', 'wakaf' );
 		foreach ( $post_types as $pt ) {
 			$posts = get_posts( array(
@@ -83,10 +89,8 @@ class WM_Digital_Signage {
 			}
 		}
 
-		// Include running text setting
 		$hash_parts[] = 'run_text:' . get_theme_mod( 'run_text', '' );
 
-		// Include total post counts (detects additions/deletions)
 		foreach ( array( 'slide', 'video', 'sf_campaign' ) as $pt ) {
 			$count = wp_count_posts( $pt );
 			$hash_parts[] = $pt . '_count:' . ( isset( $count->publish ) ? $count->publish : 0 );
@@ -99,6 +103,114 @@ class WM_Digital_Signage {
 			'time' => current_time( 'mysql' ),
 		) );
 	}
+
+	// -------------------------------------------------------
+	// Admin Settings
+	// -------------------------------------------------------
+
+	public function add_admin_menu() {
+		add_options_page(
+			'Digital Signage',
+			'Digital Signage',
+			'manage_options',
+			'wm-digisign',
+			array( $this, 'render_settings_page' )
+		);
+	}
+
+	public function register_settings() {
+		register_setting( 'wm_digisign_settings', 'wm_digisign_options', array(
+			'sanitize_callback' => array( $this, 'sanitize_settings' ),
+			'default'           => self::DEFAULTS,
+		) );
+
+		add_settings_section(
+			'wm_digisign_prayer_engine',
+			'Prayer Engine',
+			function () {
+				echo '<p>Atur durasi untuk setiap tahapan waktu sholat pada Digital Signage.</p>';
+			},
+			'wm-digisign'
+		);
+
+		$fields = array(
+			'approaching_mins' => array(
+				'label' => 'Waktu Menjelang Sholat (menit)',
+				'desc'  => 'Berapa menit sebelum waktu sholat layar menampilkan countdown besar.',
+			),
+			'adzan_duration' => array(
+				'label' => 'Durasi Adzan (menit)',
+				'desc'  => 'Berapa lama tampilan adzan ditampilkan.',
+			),
+			'iqamah_duration' => array(
+				'label' => 'Durasi Iqamah (menit)',
+				'desc'  => 'Berapa lama countdown iqamah ditampilkan setelah adzan.',
+			),
+			'sholat_duration' => array(
+				'label' => 'Durasi Sholat (menit)',
+				'desc'  => 'Berapa lama layar dimatikan (hitam) selama sholat berlangsung.',
+			),
+		);
+
+		foreach ( $fields as $key => $field ) {
+			add_settings_field(
+				'wm_digisign_' . $key,
+				$field['label'],
+				function () use ( $key, $field ) {
+					$options = self::get_settings();
+					$val = isset( $options[ $key ] ) ? $options[ $key ] : self::DEFAULTS[ $key ];
+					printf(
+						'<input type="number" name="wm_digisign_options[%s]" value="%s" min="1" max="60" class="small-text" /> <span class="description">%s</span>',
+						esc_attr( $key ),
+						esc_attr( $val ),
+						esc_html( $field['desc'] )
+					);
+				},
+				'wm-digisign',
+				'wm_digisign_prayer_engine'
+			);
+		}
+	}
+
+	public function sanitize_settings( $input ) {
+		$output = array();
+		foreach ( self::DEFAULTS as $key => $default ) {
+			$output[ $key ] = isset( $input[ $key ] ) ? absint( $input[ $key ] ) : $default;
+			if ( $output[ $key ] < 1 ) $output[ $key ] = $default;
+			if ( $output[ $key ] > 60 ) $output[ $key ] = 60;
+		}
+		return $output;
+	}
+
+	public function render_settings_page() {
+		if ( ! current_user_can( 'manage_options' ) ) return;
+		?>
+		<div class="wrap">
+			<h1>Digital Signage Settings</h1>
+			<form method="post" action="options.php">
+				<?php
+				settings_fields( 'wm_digisign_settings' );
+				do_settings_sections( 'wm-digisign' );
+				submit_button( 'Simpan Pengaturan' );
+				?>
+			</form>
+			<hr>
+			<p><a href="<?php echo esc_url( home_url( '/signage' ) ); ?>" target="_blank">🖥️ Buka Tampilan Signage &rarr;</a></p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Get prayer engine settings with defaults.
+	 */
+	public static function get_settings() {
+		$options = get_option( 'wm_digisign_options', array() );
+		return wp_parse_args( $options, self::DEFAULTS );
+	}
+
+	// -------------------------------------------------------
+	// Activation
+	// -------------------------------------------------------
 
 	public static function activate() {
 		add_rewrite_endpoint( 'signage', EP_ROOT );

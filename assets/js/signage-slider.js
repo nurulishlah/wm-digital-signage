@@ -2,6 +2,9 @@
  * Signage Slider with Video Support
  * - Images: 5 seconds
  * - Videos: 30 seconds (more time to play)
+ * - Campaign: 20 seconds
+ *
+ * Exposes window.signageSlider.pause() and .resume() for Prayer Engine.
  */
 document.addEventListener('DOMContentLoaded', function () {
     initSlider();
@@ -12,11 +15,13 @@ function initSlider() {
     if (slides.length < 2) return;
 
     let currentIndex = 0;
-    const IMAGE_DURATION = 5000;    // 5 seconds for images
-    const VIDEO_DURATION = 30000;   // 30 seconds for videos
-    const CAMPAIGN_DURATION = 20000; // 20 seconds for campaign slides
+    let timerId = null;
+    let paused = false;
 
-    // Set initial state
+    const IMAGE_DURATION = 5000;
+    const VIDEO_DURATION = 30000;
+    const CAMPAIGN_DURATION = 20000;
+
     slides[0].classList.add('active');
 
     function getSlideType(slide) {
@@ -31,19 +36,37 @@ function initSlider() {
     }
 
     function nextSlide() {
-        // Remove active from current
+        if (paused) return;
+
         slides[currentIndex].classList.remove('active');
-
-        // Next index
         currentIndex = (currentIndex + 1) % slides.length;
-
-        // Add active to next
         slides[currentIndex].classList.add('active');
 
-        // Schedule next transition based on current slide type
-        setTimeout(nextSlide, getDuration(slides[currentIndex]));
+        scheduleNext();
     }
 
-    // Start with duration based on first slide
-    setTimeout(nextSlide, getDuration(slides[0]));
+    function scheduleNext() {
+        if (timerId) clearTimeout(timerId);
+        if (paused) return;
+        timerId = setTimeout(nextSlide, getDuration(slides[currentIndex]));
+    }
+
+    // Start
+    scheduleNext();
+
+    // Expose pause/resume globally for Prayer Engine
+    window.signageSlider = {
+        pause: function () {
+            paused = true;
+            if (timerId) {
+                clearTimeout(timerId);
+                timerId = null;
+            }
+        },
+        resume: function () {
+            if (!paused) return;
+            paused = false;
+            scheduleNext();
+        }
+    };
 }

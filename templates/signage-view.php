@@ -304,6 +304,43 @@
     </footer>
 </div>
 
+<!-- Prayer Engine Overlays -->
+<div id="prayer-overlay-approaching" class="prayer-overlay hidden">
+    <div class="overlay-content approaching-content">
+        <div class="approaching-label">MENUJU WAKTU SHOLAT</div>
+        <div id="approaching-prayer-name" class="approaching-prayer-name"></div>
+        <div id="approaching-countdown" class="approaching-timer"></div>
+    </div>
+</div>
+
+<div id="prayer-overlay-adzan" class="prayer-overlay hidden">
+    <div class="overlay-content adzan-content">
+        <div class="adzan-icon">🕌</div>
+        <div class="adzan-label">ADZAN</div>
+        <div id="adzan-prayer-name" class="adzan-prayer-name"></div>
+        <div class="adzan-mosque-name"><?php echo esc_html( get_theme_mod('nama_masjid', get_bloginfo('name')) ); ?></div>
+        <div id="adzan-timer" class="adzan-timer"></div>
+    </div>
+</div>
+
+<div id="prayer-overlay-iqamah" class="prayer-overlay hidden">
+    <div class="overlay-content iqamah-content">
+        <div class="iqamah-label">IQAMAH</div>
+        <div id="iqamah-prayer-name" class="iqamah-prayer-name"></div>
+        <div id="iqamah-countdown" class="iqamah-timer"></div>
+        <div class="iqamah-hint">Siapkan diri untuk sholat berjamaah</div>
+    </div>
+</div>
+
+<div id="prayer-overlay-sholat" class="prayer-overlay hidden">
+    <div class="overlay-content sholat-content">
+        <div id="sholat-timer" class="sholat-timer"></div>
+    </div>
+</div>
+
+<?php
+    $engine_settings = WM_Digital_Signage::get_settings();
+?>
 <!-- Settings for JS -->
 <script>
     var wmDigiSettings = {
@@ -311,7 +348,11 @@
         method: "<?php echo esc_js( get_theme_mod('method_id', 'KEMENAG') ); ?>",
         imsaak_diff: 10,
         adjustment: 0,
-        restUrl: "<?php echo esc_url( rest_url( 'wm-digisign/v1' ) ); ?>"
+        restUrl: "<?php echo esc_url( rest_url( 'wm-digisign/v1' ) ); ?>",
+        approaching_mins: <?php echo intval( $engine_settings['approaching_mins'] ); ?>,
+        adzan_duration: <?php echo intval( $engine_settings['adzan_duration'] ); ?>,
+        iqamah_duration: <?php echo intval( $engine_settings['iqamah_duration'] ); ?>,
+        sholat_duration: <?php echo intval( $engine_settings['sholat_duration'] ); ?>
     };
 </script>
 
@@ -323,3 +364,4 @@
 <?php wp_footer(); ?>
 </body>
 </html>
+
