@@ -102,6 +102,10 @@ class WM_Digital_Signage {
 			$hash_parts[] = $pt . '_count:' . ( isset( $count->publish ) ? $count->publish : 0 );
 		}
 
+		// Include plugin settings so signage auto-refreshes when admin changes them
+		$settings = self::get_settings();
+		$hash_parts[] = 'settings:' . md5( serialize( $settings ) );
+
 		$hash = md5( implode( '|', $hash_parts ) );
 
 		return rest_ensure_response( array(
