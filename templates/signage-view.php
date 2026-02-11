@@ -311,13 +311,15 @@
         city_id: "<?php echo get_theme_mod('idsholat_id', '8'); ?>", // fallback to Jakarta
         method: "<?php echo get_theme_mod('method_id', 'KEMENAG'); ?>",
         imsaak_diff: 10, // minutes before Fajr
-        adjustment: 0
+        adjustment: 0,
+        restUrl: "<?php echo esc_url( rest_url( 'wm-digisign/v1' ) ); ?>"
     };
 </script>
 
 <script src="<?php echo WM_DIGISIGN_URL . 'assets/js/PrayTimes.js'; ?>"></script>
 <script src="<?php echo WM_DIGISIGN_URL . 'assets/js/signage-clock.js'; ?>"></script>
 <script src="<?php echo WM_DIGISIGN_URL . 'assets/js/signage-slider.js'; ?>"></script>
+<script src="<?php echo WM_DIGISIGN_URL . 'assets/js/signage-refresh.js'; ?>"></script>
 
 </body>
 </html>

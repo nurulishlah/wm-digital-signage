@@ -20,6 +20,7 @@ class WM_Digital_Signage {
 		add_action( 'init', array( $this, 'add_endpoint' ) );
 		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
         add_filter( 'template_include', array( $this, 'load_template' ) );
+		add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
 	}
 
 	public function add_endpoint() {
@@ -46,6 +47,57 @@ class WM_Digital_Signage {
         }
         return $template;
     }
+
+	/**
+	 * Register REST API routes for live content updates.
+	 */
+	public function register_rest_routes() {
+		register_rest_route( 'wm-digisign/v1', '/content-hash', array(
+			'methods'             => 'GET',
+			'callback'            => array( $this, 'get_content_hash' ),
+			'permission_callback' => '__return_true',
+		) );
+	}
+
+	/**
+	 * REST callback: returns a hash of all signage-relevant content.
+	 * The hash changes when any slide, video, campaign, or running text is modified.
+	 */
+	public function get_content_hash() {
+		$hash_parts = array();
+
+		// Collect last modified dates from all signage content types
+		$post_types = array( 'slide', 'video', 'sf_campaign', 'pengumuman', 'agenda', 'infaq', 'wakaf' );
+		foreach ( $post_types as $pt ) {
+			$posts = get_posts( array(
+				'post_type'      => $pt,
+				'posts_per_page' => 10,
+				'orderby'        => 'modified',
+				'order'          => 'DESC',
+				'post_status'    => 'publish',
+				'fields'         => 'ids',
+			) );
+			foreach ( $posts as $pid ) {
+				$hash_parts[] = $pid . ':' . get_post_modified_time( 'U', true, $pid );
+			}
+		}
+
+		// Include running text setting
+		$hash_parts[] = 'run_text:' . get_theme_mod( 'run_text', '' );
+
+		// Include total post counts (detects additions/deletions)
+		foreach ( array( 'slide', 'video', 'sf_campaign' ) as $pt ) {
+			$count = wp_count_posts( $pt );
+			$hash_parts[] = $pt . '_count:' . ( isset( $count->publish ) ? $count->publish : 0 );
+		}
+
+		$hash = md5( implode( '|', $hash_parts ) );
+
+		return rest_ensure_response( array(
+			'hash' => $hash,
+			'time' => current_time( 'mysql' ),
+		) );
+	}
 
 	public static function activate() {
 		add_rewrite_endpoint( 'signage', EP_ROOT );
