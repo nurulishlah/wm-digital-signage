@@ -16,31 +16,45 @@ function updateClock() {
     // Time
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
-    // const seconds = String(now.getSeconds()).padStart(2, '0');
     document.getElementById('clock-time').textContent = `${hours}:${minutes}`;
 
     // Date
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const dateStr = now.toLocaleDateString('id-ID', options);
-    // TODO: Add Hijri Date
     document.getElementById('clock-date').textContent = dateStr;
-
-    // Check prayer times every minute
-    if (now.getSeconds() === 0) {
-        highlightCurrentPrayer(now);
-    }
 }
 
 // Global Prayer Times Object
 var prayTimes = new PrayTimes(wmDigiSettings.method || 'KEMENAG');
 
+// Store prayer times and coordinates globally for recalculation
+window.prayerData = {
+    times: null,
+    lat: null,
+    lng: null,
+    timezone: null,
+    lastCalculatedDate: null
+};
+
+const PRAYER_LIST = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+const DISPLAY_NAMES = {
+    'Fajr': 'Subuh',
+    'Sunrise': 'Terbit',
+    'Dhuhr': 'Dzuhur',
+    'Asr': 'Ashar',
+    'Maghrib': 'Maghrib',
+    'Isha': 'Isya'
+};
+const PRAYER_ICONS = {
+    'Fajr': 'icofont-night',
+    'Sunrise': 'icofont-hill-sunny',
+    'Dhuhr': 'icofont-full-sunny',
+    'Asr': 'icofont-hill-sunny',
+    'Maghrib': 'icofont-sun-set',
+    'Isha': 'icofont-full-night'
+};
+
 function initPrayerTimes() {
-    // Coordinate for Jakarta (Fallback). Ideally this comes from the city_id API fetch if we want precise lat/long
-    // For now, let's try to fetch coordinates from idsholat like the theme does, or use a default.
-
-    // Since we are mocking/porting, let's fetch the ID Sholat API to get Lat/Long
-    // API: https://idsholat.net/wp-json/wp/v2/posts/{city_id}
-
     const cityId = wmDigiSettings.city_id;
     const apiUrl = `https://idsholat.net/wp-json/wp/v2/posts/${cityId}`;
 
@@ -50,22 +64,31 @@ function initPrayerTimes() {
             return response.json();
         })
         .then(data => {
-            console.log("Prayer API Data:", data); // Debug Log
             if (data.lat) {
                 const coords = data.lat.split(',');
                 const lat = parseFloat(coords[0]);
                 const lng = parseFloat(coords[1]);
                 const timezone = parseFloat(data.zone);
 
+                // Store coordinates for daily recalculation
+                window.prayerData.lat = lat;
+                window.prayerData.lng = lng;
+                window.prayerData.timezone = timezone;
+
                 calculateSchedule(lat, lng, timezone);
             } else {
                 console.warn("API returned no coordinates, using default.");
+                window.prayerData.lat = -6.2088;
+                window.prayerData.lng = 106.8456;
+                window.prayerData.timezone = 7;
                 calculateSchedule(-6.2088, 106.8456, 7);
             }
         })
         .catch(err => {
             console.error("Failed to fetch city data:", err);
-            // Fallback to Jakarta (Monas)
+            window.prayerData.lat = -6.2088;
+            window.prayerData.lng = 106.8456;
+            window.prayerData.timezone = 7;
             calculateSchedule(-6.2088, 106.8456, 7);
         });
 }
@@ -77,75 +100,84 @@ function calculateSchedule(lat, lng, timezone) {
     }
 
     const date = new Date();
-    // PrayTimes needs [lat, lng] and timezone
     const times = prayTimes.getTimes(date, [lat, lng], timezone);
-    console.log("Calculated Times:", times); // Debug Log
 
-    const listNames = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
-    const displayNames = {
-        'Fajr': 'Subuh',
-        'Sunrise': 'Terbit',
-        'Dhuhr': 'Dzuhur',
-        'Asr': 'Ashar',
-        'Maghrib': 'Maghrib',
-        'Isha': 'Isya'
-    };
+    // Store globally for recalculation
+    window.prayerData.times = times;
+    window.prayerData.lastCalculatedDate = date.toDateString();
 
-    // Icons mapping (Icofont)
-    // Available: hill-sunny, full-sunny, sun-set, night, full-night
-    const icons = {
-        'Fajr': 'icofont-night',
-        'Sunrise': 'icofont-hill-sunny',
-        'Dhuhr': 'icofont-full-sunny',
-        'Asr': 'icofont-hill-sunny', // Reusing hill-sunny for afternoon
-        'Maghrib': 'icofont-sun-set',
-        'Isha': 'icofont-full-night'
-    };
-
-    const container = document.getElementById('prayer-list');
-    if (container) {
-        container.innerHTML = ''; // Clear
-        listNames.forEach(name => {
-            const timeVal = times[name.toLowerCase()]; // 04:30
-            const iconClass = icons[name] || 'icofont-clock-time';
-
-            const el = document.createElement('div');
-            el.className = 'prayer-item';
-            el.dataset.name = name; // Sets data-name="Fajr"
-            el.innerHTML = `
-                <div class="prayer-label">
-                    <i class="prayer-icon ${iconClass}"></i>
-                    <span class="prayer-name">${displayNames[name]}</span>
-                </div>
-                <span class="prayer-time">${timeVal}</span>
-            `;
-            container.appendChild(el);
-        });
-    }
-
-    highlightCurrentPrayer(new Date(), times);
-    startCountdown(times);
+    renderPrayerList(times);
+    findAndSetNextPrayer(new Date());
+    startCountdown();
 }
 
-function highlightCurrentPrayer(now, times) {
+/**
+ * Recalculate prayer times for a new day (midnight rollover)
+ */
+function recalculateForNewDay() {
+    const { lat, lng, timezone } = window.prayerData;
+    if (lat == null) return;
+
+    const today = new Date();
+    const times = prayTimes.getTimes(today, [lat, lng], timezone);
+
+    window.prayerData.times = times;
+    window.prayerData.lastCalculatedDate = today.toDateString();
+
+    renderPrayerList(times);
+    findAndSetNextPrayer(today);
+}
+
+/**
+ * Render the prayer list UI
+ */
+function renderPrayerList(times) {
+    const container = document.getElementById('prayer-list');
+    if (!container) return;
+
+    container.innerHTML = '';
+    PRAYER_LIST.forEach(name => {
+        const timeVal = times[name.toLowerCase()];
+        const iconClass = PRAYER_ICONS[name] || 'icofont-clock-time';
+
+        const el = document.createElement('div');
+        el.className = 'prayer-item';
+        el.dataset.name = name;
+        el.innerHTML = `
+            <div class="prayer-label">
+                <i class="prayer-icon ${iconClass}"></i>
+                <span class="prayer-name">${DISPLAY_NAMES[name]}</span>
+            </div>
+            <span class="prayer-time">${timeVal}</span>
+        `;
+        container.appendChild(el);
+    });
+}
+
+/**
+ * Convert "HH:MM" string to total minutes
+ */
+function timeToMins(tStr) {
+    const [h, m] = tStr.split(':').map(Number);
+    return h * 60 + m;
+}
+
+/**
+ * Find and set the next upcoming prayer based on current time.
+ * Updates the active highlight and the countdown target.
+ */
+function findAndSetNextPrayer(now) {
+    const times = window.prayerData.times;
     if (!times) return;
 
-    // Time in minutes for comparison
-    const currentMins = now.getHours() * 60 + now.getMinutes();
-
-    // Convert times to minutes
-    const timeToMins = (tStr) => {
-        const [h, m] = tStr.split(':').map(Number);
-        return h * 60 + m;
-    };
+    const currentMins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
 
     let nextPrayerName = null;
     let nextPrayerTime = null;
+    let isTomorrow = false;
 
-    const listNames = ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha']; // Keys in PrayTimes
-
-    // Find next prayer
-    for (const name of listNames) {
+    // Find the next prayer that hasn't passed yet
+    for (const name of PRAYER_LIST) {
         const pTime = times[name.toLowerCase()];
         const pMins = timeToMins(pTime);
 
@@ -159,35 +191,53 @@ function highlightCurrentPrayer(now, times) {
     // If no next prayer found (after Isha), next is Fajr tomorrow
     if (!nextPrayerName) {
         nextPrayerName = 'Fajr';
-        nextPrayerTime = times.fajr; // Using today's Fajr as proxy for time, logic needs tomorrow handling for accurate countdown
+        nextPrayerTime = times.fajr;
+        isTomorrow = true;
     }
 
-    // Highlight UI
+    // Update active highlight
     document.querySelectorAll('.prayer-item').forEach(el => el.classList.remove('active'));
-
-    // Fix: Selector was [dataset-name], changed to [data-name]
     const nextEl = document.querySelector(`.prayer-item[data-name="${nextPrayerName}"]`);
     if (nextEl) nextEl.classList.add('active');
 
-    // Update Countdown Target
-    window.nextPrayerTarget = { name: nextPrayerName, time: nextPrayerTime };
-    console.log("Next Prayer Target:", window.nextPrayerTarget); // Debug Log
-    updateCountdownText(now);
+    // Set countdown target
+    window.nextPrayerTarget = {
+        name: nextPrayerName,
+        time: nextPrayerTime,
+        isTomorrow: isTomorrow
+    };
+
+    // Update the label immediately
+    const elName = document.getElementById('next-prayer-name');
+    if (elName) elName.textContent = DISPLAY_NAMES[nextPrayerName] || nextPrayerName;
 }
 
-function startCountdown(times) {
+/**
+ * Start the countdown interval (runs every second)
+ */
+function startCountdown() {
     if (window.countdownInterval) clearInterval(window.countdownInterval);
 
-    // Initial call
+    // Run immediately then every second
     updateCountdownText(new Date());
-
     window.countdownInterval = setInterval(() => {
         updateCountdownText(new Date());
     }, 1000);
 }
 
+/**
+ * Update the countdown display. When countdown reaches zero,
+ * automatically recalculate the next prayer.
+ */
 function updateCountdownText(now) {
     if (!window.nextPrayerTarget) return;
+
+    // Check if we've crossed midnight — recalculate prayer times for new day
+    if (window.prayerData.lastCalculatedDate &&
+        now.toDateString() !== window.prayerData.lastCalculatedDate) {
+        recalculateForNewDay();
+        return;
+    }
 
     const targetTimeStr = window.nextPrayerTarget.time;
     const [tH, tM] = targetTimeStr.split(':').map(Number);
@@ -195,20 +245,23 @@ function updateCountdownText(now) {
     let targetDate = new Date(now);
     targetDate.setHours(tH, tM, 0, 0);
 
-    // If target is earlier than now, it means it's tomorrow (e.g. Fajr)
-    // OR if next prayer is Fajr and it's currently Isha time (late night)
-    if (targetDate < now) {
+    // Only add a day if the prayer is explicitly marked as tomorrow
+    // (i.e. after Isha, waiting for Fajr). Do NOT use targetDate < now
+    // because that would skip past the zero threshold and prevent
+    // findAndSetNextPrayer() from ever being called.
+    if (window.nextPrayerTarget.isTomorrow) {
         targetDate.setDate(targetDate.getDate() + 1);
     }
 
     const diff = targetDate - now;
 
     if (diff <= 0) {
-        document.getElementById('countdown').textContent = "00:00:00";
+        // Prayer time has passed! Recalculate the next prayer.
+        findAndSetNextPrayer(now);
         return;
     }
 
-    // Format H:M:S
+    // Format -HH:MM:SS
     const h = Math.floor(diff / (1000 * 60 * 60));
     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const s = Math.floor((diff % (1000 * 60)) / 1000);
@@ -218,16 +271,4 @@ function updateCountdownText(now) {
 
     const elCountdown = document.getElementById('countdown');
     if (elCountdown) elCountdown.textContent = countdownStr;
-
-    // Update Name
-    const displayNames = {
-        'Fajr': 'Subuh',
-        'Sunrise': 'Terbit',
-        'Dhuhr': 'Dzuhur',
-        'Asr': 'Ashar',
-        'Maghrib': 'Maghrib',
-        'Isha': 'Isya'
-    };
-    const elName = document.getElementById('next-prayer-name');
-    if (elName) elName.textContent = displayNames[window.nextPrayerTarget.name] || window.nextPrayerTarget.name;
 }
