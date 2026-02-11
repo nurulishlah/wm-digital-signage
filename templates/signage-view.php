@@ -35,7 +35,7 @@
             
             <div class="mosque-text">
                 <div class="mosque-name"><?php echo esc_html( get_theme_mod('nama_masjid', get_bloginfo('name')) ); ?></div>
-                <div class="mosque-slogan" style="font-size: 1.2rem; opacity: 0.9; color: #cbd5e1; font-weight: 400;"><?php bloginfo('description'); ?></div>
+                <div class="mosque-slogan" style="font-size: 1.2rem; opacity: 0.9; color: #cbd5e1; font-weight: 400;"><?php echo esc_html( get_bloginfo('description') ); ?></div>
                 <div class="mosque-address"><?php echo esc_html( get_theme_mod('alamat', '') ); ?></div>
             </div>
         </div>
@@ -298,7 +298,7 @@
                 }
 
                 // Combine: Static Text + Dynamic Posts
-                echo strip_tags( strip_shortcodes($static_text) ) . $dynamic_text; 
+                echo esc_html( strip_shortcodes($static_text) ) . $dynamic_text; 
             ?>
         </div>
     </footer>
@@ -344,7 +344,7 @@
 <!-- Settings for JS -->
 <script>
     var wmDigiSettings = {
-        city_id: "<?php echo esc_js( get_theme_mod('idsholat_id', '8') ); ?>",
+        city_id: "<?php echo esc_js( absint( get_theme_mod('idsholat_id', '8') ) ); ?>",
         method: "<?php echo esc_js( get_theme_mod('method_id', 'KEMENAG') ); ?>",
         imsaak_diff: 10,
         adjustment: 0,

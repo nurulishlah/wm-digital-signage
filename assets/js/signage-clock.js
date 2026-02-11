@@ -87,7 +87,12 @@ window.nextPrayerTarget = null;
 
 function initPrayerTimes() {
     const cityId = wmDigiSettings.city_id;
-    const apiUrl = `https://idsholat.net/wp-json/wp/v2/posts/${cityId}`;
+    if (!cityId || isNaN(Number(cityId))) {
+        console.warn('Invalid city_id, using fallback');
+        useFallbackCoords();
+        return;
+    }
+    const apiUrl = `https://idsholat.net/wp-json/wp/v2/posts/${encodeURIComponent(cityId)}`;
 
     fetch(apiUrl)
         .then(response => {
@@ -201,13 +206,25 @@ function renderPrayerList(times) {
         const el = document.createElement('div');
         el.className = 'prayer-item';
         el.dataset.name = name;
-        el.innerHTML = `
-            <div class="prayer-label">
-                <i class="prayer-icon ${iconClass}"></i>
-                <span class="prayer-name">${DISPLAY_NAMES[name]}</span>
-            </div>
-            <span class="prayer-time">${timeVal}</span>
-        `;
+
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'prayer-label';
+
+        const icon = document.createElement('i');
+        icon.className = 'prayer-icon ' + iconClass;
+        labelDiv.appendChild(icon);
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'prayer-name';
+        nameSpan.textContent = DISPLAY_NAMES[name] || name;
+        labelDiv.appendChild(nameSpan);
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'prayer-time';
+        timeSpan.textContent = timeVal || '--:--';
+
+        el.appendChild(labelDiv);
+        el.appendChild(timeSpan);
         container.appendChild(el);
     });
 }
@@ -518,6 +535,7 @@ function playBeep() {
         var ctx = new (window.AudioContext || window.webkitAudioContext)();
 
         // Play 3 short beeps
+        var lastStop = 0;
         [0, 0.3, 0.6].forEach(function (delay) {
             var osc = ctx.createOscillator();
             var gain = ctx.createGain();
@@ -528,7 +546,13 @@ function playBeep() {
             gain.gain.value = 0.3;
             osc.start(ctx.currentTime + delay);
             osc.stop(ctx.currentTime + delay + 0.15);
+            lastStop = delay + 0.15;
         });
+
+        // Close AudioContext after playback to free resources
+        setTimeout(function () {
+            ctx.close();
+        }, (lastStop + 0.5) * 1000);
     } catch (e) {
         // Audio not available — ignore silently
     }
