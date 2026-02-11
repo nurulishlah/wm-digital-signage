@@ -3,7 +3,7 @@ Contributors: nurulishlah
 Tags: digital signage, mosque, prayer times, masjid, display
 Requires at least: 5.0
 Tested up to: 6.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -54,6 +54,17 @@ Currently the design uses the WP Masjid theme color palette. Custom color option
 
 == Changelog ==
 
+= 1.4.0 =
+* NEW: Prayer Engine state machine — 5 automated states around prayer times
+* NEW: APPROACHING overlay with countdown (configurable minutes before prayer)
+* NEW: ADZAN visual alert with mosque icon, prayer name, and beep sound
+* NEW: IQAMAH countdown overlay with configurable duration
+* NEW: SHOLAT mode — black screen (OLED saver) during prayer
+* NEW: Sunrise exception — skips ADZAN/IQAMAH/SHOLAT states
+* NEW: Admin settings page (Settings > Digital Signage) for all durations
+* NEW: Slider auto-pauses during ADZAN/IQAMAH/SHOLAT, resumes after
+* FIX: Countdown timer format no longer shows erroneous minus prefix
+
 = 1.3.0 =
 * NEW: Auto-refresh signage when content is updated in WordPress (no manual reload needed)
 * NEW: Prayer countdown auto-transitions to next prayer without page reload
@@ -92,6 +103,9 @@ Currently the design uses the WP Masjid theme color palette. Custom color option
 * TV-safe zones
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Prayer Engine state machine! Automated APPROACHING, ADZAN, IQAMAH, and SHOLAT overlays. Configurable via Settings > Digital Signage.
 
 = 1.3.0 =
 Auto-refresh content, auto-transitioning prayer countdown, and security hardening. Recommended update.
